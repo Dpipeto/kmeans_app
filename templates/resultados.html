@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block title %}Resultados{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="hero-tag">// Análisis e Interpretación</div>
+  <h1>Resultados<br><span style="color:var(--accent4)">del Modelo</span></h1>
+  <p>Interpretación de los 3 clústeres identificados, patrones encontrados y conclusiones del ejercicio con K = 3.</p>
+</div>
+
+<div class="content">
+  <!-- Summary stats from API -->
+  <div id="cluster-summary" class="grid-3" style="margin-bottom:2rem">
+    <div class="loading"><div class="spinner"></div></div>
+  </div>
+
+  <div class="section-head">Interpretación por Clúster</div>
+
+  <div class="interp" style="border-left-color:var(--accent)">
+    <strong>🔵 Clúster 0 — Clientes Jóvenes / Básicos</strong><br>
+    Conformado por clientes de menor edad (aproximadamente 18–30 años) con ingresos y gastos más bajos. Su frecuencia de compras es reducida y llevan poco tiempo como clientes. Representan un segmento de entrada que puede fidelizarse con estrategias de descuento, acumulación de puntos y experiencias personalizadas para jóvenes. Son sensibles al precio y responden bien a comunicación digital.
+  </div>
+
+  <div class="interp" style="border-left-color:var(--accent2)">
+    <strong>🟣 Clúster 1 — Clientes Intermedios / Activos</strong><br>
+    Clientes de mediana edad (30–45 años) con ingresos medios y una frecuencia de compras moderada-alta. Son el segmento más estable: tienen suficiente poder adquisitivo y lealtad media. Responden bien a programas de membresía, promociones estacionales y cross-selling. Son el núcleo del negocio en términos de volumen de transacciones.
+  </div>
+
+  <div class="interp" style="border-left-color:var(--accent3)">
+    <strong>🟢 Clúster 2 — Clientes Premium / Leales</strong><br>
+    Clientes de mayor edad (45–70 años) con ingresos altos, mayor gasto mensual, alta frecuencia de compras y larga antigüedad. Son los clientes más valiosos: alta retención, mayor ticket promedio y más productos adquiridos. La estrategia óptima es atención VIP, beneficios exclusivos y comunicación personalizada. Su churn debe monitorearse con especial atención.
+  </div>
+
+  <div class="section-head">Patrones Identificados</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Correlación Edad–Ingreso</div>
+      <p style="color:var(--muted);font-size:.87rem;line-height:1.8">
+        Se observa una <strong style="color:var(--text)">correlación positiva clara</strong> entre edad e ingreso mensual. Los clientes mayores presentan ingresos significativamente más altos, lo que produce segmentos naturalmente diferenciados en el espacio multidimensional. Esto valida la selección de ambas variables como features.
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--accent2)"></span>Gasto vs Frecuencia</div>
+      <p style="color:var(--muted);font-size:.87rem;line-height:1.8">
+        El gasto mensual y la frecuencia de compras escalan juntos entre clústeres. Los clientes premium no solo gastan más por visita, sino que también visitan <strong style="color:var(--text)">con mayor regularidad</strong>. Esto sugiere que la fidelización y el valor del cliente van de la mano en este contexto.
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--accent3)"></span>Antigüedad como Indicador</div>
+      <p style="color:var(--muted);font-size:.87rem;line-height:1.8">
+        La variable <code style="font-family:'JetBrains Mono',monospace;font-size:.8rem">antiguedad_meses</code> resultó ser un <strong style="color:var(--text)">separador efectivo</strong> entre clústeres. Los clientes de mayor antigüedad pertenecen consistentemente al clúster premium, lo que confirma su papel como proxy de lealtad y valor de vida del cliente (CLV).
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--accent4)"></span>Separación en PCA</div>
+      <p style="color:var(--muted);font-size:.87rem;line-height:1.8">
+        Al proyectar a 2D con PCA, los tres clústeres muestran <strong style="color:var(--text)">separación visual clara</strong>, con mínima superposición. Esto indica que las 6 variables juntas capturan bien la varianza entre grupos y que K = 3 es una partición coherente con la estructura real de los datos.
+      </p>
+    </div>
+  </div>
+
+  <div class="section-head">Selección de K = 3</div>
+  <div class="card">
+    <div class="card-title"><span class="dot" style="background:var(--accent4)"></span>Justificación</div>
+    <p style="color:var(--muted);font-size:.87rem;line-height:1.8;margin-bottom:.8rem">
+      El método del codo muestra una caída pronunciada de inercia entre K = 1 y K = 3, con una inflexión visible en K = 3 a partir de la cual la reducción de inercia es marginal. Adicionalmente, desde el dominio del negocio, <strong style="color:var(--text)">tres segmentos</strong> (básico, intermedio, premium) son accionables, interpretables y suficientemente distintos para diseñar estrategias diferenciadas.
+    </p>
+    <p style="color:var(--muted);font-size:.87rem;line-height:1.8">
+      Valores de K mayores (4–5) producen subgrupos demasiado similares entre sí y dificultan la toma de decisiones de negocio. K = 2 pierde el segmento intermedio, que es el más numeroso y estratégicamente relevante.
+    </p>
+  </div>
+
+  <div class="section-head">Conclusiones Generales</div>
+  <div class="card" style="background:linear-gradient(135deg,rgba(110,231,247,.04),rgba(52,211,153,.04));border-color:rgba(110,231,247,.15)">
+    <div style="display:flex;flex-direction:column;gap:.8rem">
+      <div style="font-size:.88rem;color:var(--muted);line-height:1.8;padding-left:1rem;border-left:2px solid var(--accent)">
+        K-Means con K = 3 identificó exitosamente tres perfiles de cliente con características estadísticamente distintas, validando la hipótesis de segmentación natural en el dataset.
+      </div>
+      <div style="font-size:.88rem;color:var(--muted);line-height:1.8;padding-left:1rem;border-left:2px solid var(--accent2)">
+        La normalización con StandardScaler fue fundamental para evitar que variables de mayor escala (ingreso, gasto) dominaran la métrica de distancia, permitiendo que todas las variables contribuyeran equitativamente al agrupamiento.
+      </div>
+      <div style="font-size:.88rem;color:var(--muted);line-height:1.8;padding-left:1rem;border-left:2px solid var(--accent3)">
+        La proyección PCA a 2D confirmó la separabilidad de los clústeres, siendo el 70–80% de la varianza explicada por los primeros dos componentes principales.
+      </div>
+      <div style="font-size:.88rem;color:var(--muted);line-height:1.8;padding-left:1rem;border-left:2px solid var(--accent4)">
+        El ejercicio demuestra que el aprendizaje no supervisado es una herramienta poderosa para descubrir estructura en datos sin etiquetas, con aplicaciones directas en marketing, ventas y servicio al cliente.
+      </div>
+    </div>
+  </div>
+
+  <div class="section-head">Implementación Flask</div>
+  <div class="card">
+    <div class="card-title"><span class="dot" style="background:var(--accent2)"></span>Estructura del Proyecto</div>
+    <div class="code-block">
+kmeans_app/<br>
+├── app.py &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm"># Rutas Flask y lógica K-Means</span><br>
+├── data/<br>
+│ &nbsp;&nbsp;└── clientes.csv &nbsp;<span class="cm"># Dataset con 150 registros</span><br>
+├── templates/<br>
+│ &nbsp;&nbsp;├── base.html &nbsp;&nbsp;&nbsp;&nbsp;<span class="cm"># Layout base con navbar</span><br>
+│ &nbsp;&nbsp;├── index.html &nbsp;&nbsp;&nbsp;<span class="cm"># Página de inicio</span><br>
+│ &nbsp;&nbsp;├── dataset.html &nbsp;<span class="cm"># Exploración del dataset</span><br>
+│ &nbsp;&nbsp;├── conceptos.html<span class="cm"># Teoría de K-Means</span><br>
+│ &nbsp;&nbsp;├── modelo.html &nbsp;&nbsp;<span class="cm"># Ejecución interactiva</span><br>
+│ &nbsp;&nbsp;└── resultados.html<span class="cm"># Análisis e interpretación</span><br>
+└── requirements.txt &nbsp;<span class="cm"># Dependencias</span>
+    </div>
+    <p style="color:var(--muted);font-size:.82rem;line-height:1.7;margin-top:1rem">
+      El backend expone tres endpoints: <code style="font-family:'JetBrains Mono',monospace;color:var(--accent)">/api/dataset-info</code>, <code style="font-family:'JetBrains Mono',monospace;color:var(--accent2)">/api/elbow</code> y <code style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">/api/cluster?k=N</code>. El frontend consume estos endpoints con JavaScript puro y renderiza los gráficos con Chart.js.
+    </p>
+  </div>
+</div>
+
+<script>
+fetch('/api/cluster?k=3').then(r=>r.json()).then(d => {
+  const COLORS = ['#6ee7f7','#a78bfa','#34d399'];
+  const grid = document.getElementById('cluster-summary');
+  grid.innerHTML = '';
+  [0,1,2].forEach(ci => {
+    const c = d.centroids_orig.find(x => x.cluster === ci);
+    const size = d.sizes[ci] || 0;
+    const names = ['Básicos', 'Activos', 'Premium'];
+    const el = document.createElement('div');
+    el.className = 'stat-pill';
+    el.innerHTML = `
+      <span class="stat-label" style="color:${COLORS[ci]}">Clúster ${ci} — ${names[ci]}</span>
+      <span class="stat-value" style="color:${COLORS[ci]};font-size:2rem">${size}</span>
+      <span style="font-size:.72rem;color:var(--muted)">clientes · Ingreso media: $${Number(c.ingreso_mensual).toLocaleString('es-CO',{maximumFractionDigits:0})}</span>
+    `;
+    grid.appendChild(el);
+  });
+});
+</script>
+{% endblock %}

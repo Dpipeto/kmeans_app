@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% block title %}Modelo K-Means{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="hero-tag">// Ejecución del Modelo</div>
+  <h1>Ejecutar<br><span style="color:var(--accent3)">K-Means</span></h1>
+  <p>Selecciona el número de clústeres K y observa en tiempo real la segmentación de los clientes, los centroides y el método del codo.</p>
+</div>
+
+<div class="content">
+  <!-- Controls -->
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-title"><span class="dot" style="background:var(--accent3)"></span>Parámetros del Modelo</div>
+    <div class="slider-wrap">
+      <label style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--muted)">K =</label>
+      <span class="k-display" id="k-val">3</span>
+      <input type="range" id="k-slider" min="2" max="8" value="3">
+      <button id="run-btn" onclick="runModel()" style="padding:.5rem 1.2rem;background:var(--accent3);color:#000;border:none;border-radius:6px;font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;letter-spacing:.02em">
+        Ejecutar
+      </button>
+    </div>
+    <div id="model-meta" style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted)"></div>
+  </div>
+
+  <!-- Elbow chart -->
+  <div class="section-head">Método del Codo</div>
+  <div class="chart-wrap" style="margin-bottom:1.5rem;height:280px">
+    <canvas id="elbow-chart"></canvas>
+  </div>
+
+  <!-- Scatter plot -->
+  <div class="section-head">Visualización de Clústeres <span style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);font-weight:400">(PCA 2D)</span></div>
+  <div class="chart-wrap" style="margin-bottom:1.5rem;height:420px">
+    <div id="scatter-loading" class="loading"><div class="spinner"></div> Calculando proyección…</div>
+    <canvas id="scatter-chart" style="display:none"></canvas>
+  </div>
+
+  <!-- Centroids table -->
+  <div class="section-head">Centroides (escala original)</div>
+  <div class="tbl-wrap" style="margin-bottom:1.5rem">
+    <table id="centroid-table">
+      <tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr>
+    </table>
+  </div>
+
+  <!-- Data table -->
+  <div class="section-head">Datos con Clúster Asignado <span style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);font-weight:400">(primeros 50)</span></div>
+  <div class="tbl-wrap">
+    <table id="data-table">
+      <tr><td colspan="8" class="loading"><div class="spinner"></div></td></tr>
+    </table>
+  </div>
+</div>
+
+<script>
+const COLORS = ['#6ee7f7','#a78bfa','#34d399','#fb923c','#f472b6','#facc15','#60a5fa','#f43f5e'];
+let elbowChart = null, scatterChart = null;
+
+// Slider update
+document.getElementById('k-slider').addEventListener('input', function(){
+  document.getElementById('k-val').textContent = this.value;
+});
+
+// Load elbow on page load
+async function loadElbow() {
+  const r = await fetch('/api/elbow');
+  const d = await r.json();
+  const ctx = document.getElementById('elbow-chart').getContext('2d');
+  if (elbowChart) elbowChart.destroy();
+  elbowChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: d.k_values,
+      datasets: [{
+        label: 'Inercia',
+        data: d.inertias,
+        borderColor: '#6ee7f7',
+        backgroundColor: 'rgba(110,231,247,.08)',
+        borderWidth: 2.5,
+        pointBackgroundColor: d.k_values.map(k => k===3 ? '#fb923c' : '#6ee7f7'),
+        pointRadius: d.k_values.map(k => k===3 ? 8 : 4),
+        tension: .35,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#6b7280', font: { family: 'JetBrains Mono', size: 11 } } },
+        tooltip: {
+          backgroundColor: '#0f1117',
+          borderColor: '#1e2130', borderWidth: 1,
+          titleColor: '#6ee7f7', bodyColor: '#e8eaf2',
+          callbacks: { label: ctx => `Inercia: ${ctx.parsed.y.toFixed(2)}` }
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(30,33,48,.8)' }, ticks: { color: '#6b7280', font: { family: 'JetBrains Mono' } }, title: { display: true, text: 'Número de clústeres (K)', color: '#6b7280' } },
+        y: { grid: { color: 'rgba(30,33,48,.8)' }, ticks: { color: '#6b7280', font: { family: 'JetBrains Mono' } }, title: { display: true, text: 'Inercia', color: '#6b7280' } }
+      }
+    }
+  });
+}
+
+async function runModel() {
+  const k = document.getElementById('k-slider').value;
+  document.getElementById('scatter-loading').style.display = 'flex';
+  document.getElementById('scatter-chart').style.display = 'none';
+  document.getElementById('model-meta').textContent = 'Calculando…';
+
+  const r = await fetch(`/api/cluster?k=${k}`);
+  const d = await r.json();
+
+  // Meta info
+  document.getElementById('model-meta').textContent =
+    `Inercia: ${d.inertia} · Varianza explicada (PCA): ${d.var_explained}% · Registros: 150`;
+
+  // Scatter chart
+  const datasets = [];
+  for (let ci = 0; ci < d.k; ci++) {
+    const pts = d.points.filter(p => p.cluster === ci);
+    datasets.push({
+      label: `Clúster ${ci}`,
+      data: pts.map(p => ({x: p.x, y: p.y, meta: p})),
+      backgroundColor: COLORS[ci] + 'cc',
+      pointRadius: 5,
+      pointHoverRadius: 7,
+    });
+  }
+  // Centroids as separate dataset
+  datasets.push({
+    label: 'Centroides',
+    data: d.centroids_2d.map(c => ({x: c.x, y: c.y})),
+    backgroundColor: '#fff',
+    borderColor: '#000',
+    borderWidth: 2,
+    pointRadius: 10,
+    pointStyle: 'rectRot',
+    pointHoverRadius: 12,
+  });
+
+  const ctx2 = document.getElementById('scatter-chart').getContext('2d');
+  if (scatterChart) scatterChart.destroy();
+  scatterChart = new Chart(ctx2, {
+    type: 'scatter',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#6b7280', font: { family: 'JetBrains Mono', size: 11 }, usePointStyle: true } },
+        tooltip: {
+          backgroundColor: '#0f1117',
+          borderColor: '#1e2130', borderWidth: 1,
+          titleColor: '#6ee7f7', bodyColor: '#e8eaf2',
+          callbacks: {
+            title: items => {
+              const m = items[0].raw.meta;
+              return m ? m.cliente_id : 'Centroide';
+            },
+            label: item => {
+              const m = item.raw.meta;
+              if (!m) return 'Centroide del clúster';
+              return [`Edad: ${m.edad}`, `Ingreso: $${Number(m.ingreso).toLocaleString('es-CO')}`, `Gasto: $${Number(m.gasto).toLocaleString('es-CO')}`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(30,33,48,.8)' }, ticks: { color: '#6b7280', font: { family: 'JetBrains Mono' } }, title: { display: true, text: 'Componente Principal 1', color: '#6b7280' } },
+        y: { grid: { color: 'rgba(30,33,48,.8)' }, ticks: { color: '#6b7280', font: { family: 'JetBrains Mono' } }, title: { display: true, text: 'Componente Principal 2', color: '#6b7280' } }
+      }
+    }
+  });
+  document.getElementById('scatter-loading').style.display = 'none';
+  document.getElementById('scatter-chart').style.display = 'block';
+
+  // Centroids table
+  const ct = document.getElementById('centroid-table');
+  const features = d.features;
+  const fmt = v => Number(v).toLocaleString('es-CO', {maximumFractionDigits: 1});
+  ct.innerHTML = `<tr><th>Clúster</th>${features.map(f=>`<th>${f}</th>`).join('')}</tr>` +
+    d.centroids_orig.map(c => `
+      <tr>
+        <td><span class="badge" style="background:${COLORS[c.cluster]}22;color:${COLORS[c.cluster]};border:1px solid ${COLORS[c.cluster]}44">
+          ● ${c.cluster}
+        </span></td>
+        ${features.map(f=>`<td>${fmt(c[f])}</td>`).join('')}
+      </tr>`).join('');
+
+  // Data table
+  const dt = document.getElementById('data-table');
+  const cols = ['cliente_id','edad','ingreso_mensual','gasto_mensual','frecuencia_compras','antiguedad_meses','num_productos','cluster'];
+  dt.innerHTML = `<tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr>` +
+    d.table.map(row => `<tr>
+      <td style="font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.72rem">${row.cliente_id}</td>
+      <td>${row.edad}</td>
+      <td>${Number(row.ingreso_mensual).toLocaleString('es-CO')}</td>
+      <td>${Number(row.gasto_mensual).toLocaleString('es-CO')}</td>
+      <td>${row.frecuencia_compras}</td>
+      <td>${row.antiguedad_meses}</td>
+      <td>${row.num_productos}</td>
+      <td><span class="badge" style="background:${COLORS[row.cluster]}22;color:${COLORS[row.cluster]};border:1px solid ${COLORS[row.cluster]}44">● ${row.cluster}</span></td>
+    </tr>`).join('');
+}
+
+// Auto-run on load
+window.addEventListener('load', () => { loadElbow(); runModel(); });
+</script>
+{% endblock %}

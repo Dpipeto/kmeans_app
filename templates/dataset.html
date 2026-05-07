@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Dataset{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="hero-tag">// Exploración de Datos</div>
+  <h1>Dataset de<br><span style="color:var(--accent)">Clientes</span></h1>
+  <p>150 registros de clientes con 6 variables numéricas. Fuente: datos simulados con distribuciones realistas para contexto de retail colombiano.</p>
+</div>
+
+<div class="content">
+  <div id="stats-grid" class="grid-3" style="margin-bottom:1.5rem">
+    <div class="loading"><div class="spinner"></div> Cargando estadísticas…</div>
+  </div>
+
+  <div class="section-head">Estadísticas Descriptivas</div>
+  <div class="tbl-wrap" style="margin-bottom:1.5rem">
+    <table id="stats-table">
+      <tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr>
+    </table>
+  </div>
+
+  <div class="section-head">Vista Previa del Dataset <span style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);font-weight:400">(primeros 10 registros)</span></div>
+  <div class="tbl-wrap">
+    <table id="preview-table">
+      <tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr>
+    </table>
+  </div>
+
+  <div class="section-head">Preparación de Datos</div>
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>Proceso de Limpieza y Normalización</div>
+    <div style="display:flex;flex-direction:column;gap:1rem">
+      <div class="interp">
+        <strong>1. Valores nulos:</strong> El dataset no presenta valores nulos. Se validó que todas las columnas tuvieran valores dentro de rangos razonables.
+      </div>
+      <div class="interp" style="border-left-color:var(--accent2)">
+        <strong>2. Outliers:</strong> Se aplicó <code style="font-family:'JetBrains Mono',monospace;font-size:.8rem">clip()</code> durante la generación para garantizar rangos coherentes con la realidad (edad 18–75, ingresos &gt; 700 000 COP, etc.).
+      </div>
+      <div class="interp" style="border-left-color:var(--accent3)">
+        <strong>3. Normalización (StandardScaler):</strong> Dado que las variables tienen escalas muy distintas (ingresos en millones vs frecuencia en unidades), se aplicó estandarización Z-score para que ninguna variable domine el cálculo de distancias.
+      </div>
+      <div class="interp" style="border-left-color:var(--accent4)">
+        <strong>4. Selección de variables:</strong> Se excluyó <code style="font-family:'JetBrains Mono',monospace;font-size:.8rem">cliente_id</code> por ser identificador no numérico. Las 6 variables restantes tienen correlación suficiente con el comportamiento de compra.
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <div class="card-title"><span class="dot" style="background:var(--accent2)"></span>Código de Preparación</div>
+    <div class="code-block">
+<span class="kw">import</span> pandas <span class="kw">as</span> pd<br>
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> StandardScaler<br><br>
+df = pd.read_csv(<span style="color:#fb923c">'clientes.csv'</span>)<br><br>
+<span class="cm"># Seleccionar features numéricas</span><br>
+features = [<span style="color:#fb923c">'edad'</span>, <span style="color:#fb923c">'ingreso_mensual'</span>, <span style="color:#fb923c">'gasto_mensual'</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#fb923c">'frecuencia_compras'</span>, <span style="color:#fb923c">'antiguedad_meses'</span>, <span style="color:#fb923c">'num_productos'</span>]<br>
+X = df[features]<br><br>
+<span class="cm"># Normalizar con Z-score</span><br>
+scaler = StandardScaler()<br>
+X_scaled = scaler.fit_transform(X)
+    </div>
+  </div>
+</div>
+
+<script>
+fetch('/api/dataset-info').then(r=>r.json()).then(data => {
+  // Stats grid
+  const labels = {
+    edad:'Edad (años)', ingreso_mensual:'Ingreso Mensual (COP)',
+    gasto_mensual:'Gasto Mensual (COP)', frecuencia_compras:'Frec. Compras/mes',
+    antiguedad_meses:'Antigüedad (meses)', num_productos:'Num. Productos'
+  };
+  const colors = ['var(--accent)','var(--accent2)','var(--accent3)','var(--accent4)','var(--accent5)','#facc15'];
+  const grid = document.getElementById('stats-grid');
+  grid.innerHTML = '';
+  data.features.forEach((f,i) => {
+    const s = data.stats[f];
+    const el = document.createElement('div');
+    el.className = 'stat-pill';
+    el.innerHTML = `
+      <span class="stat-label">${labels[f]||f}</span>
+      <span class="stat-value" style="color:${colors[i]};font-size:1.2rem">${Number(s.mean).toLocaleString('es-CO',{maximumFractionDigits:1})}</span>
+      <span style="font-size:.72rem;color:var(--muted)">Media · σ ${Number(s.std).toLocaleString('es-CO',{maximumFractionDigits:0})}</span>
+    `;
+    grid.appendChild(el);
+  });
+
+  // Stats table
+  const st = document.getElementById('stats-table');
+  const fmtN = v => Number(v).toLocaleString('es-CO',{maximumFractionDigits:0});
+  st.innerHTML = `<tr><th>Variable</th><th>Media</th><th>Desv. Est.</th><th>Mínimo</th><th>Máximo</th></tr>` +
+    data.features.map(f => {
+      const s = data.stats[f];
+      return `<tr><td style="font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.75rem">${f}</td>
+        <td>${fmtN(s.mean)}</td><td>${fmtN(s.std)}</td><td>${fmtN(s.min)}</td><td>${fmtN(s.max)}</td></tr>`;
+    }).join('');
+
+  // Preview table
+  const pt = document.getElementById('preview-table');
+  const cols = Object.keys(data.preview[0]);
+  pt.innerHTML = `<tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr>` +
+    data.preview.map(row =>
+      `<tr>${cols.map(c=>`<td>${typeof row[c]==='number'?Number(row[c]).toLocaleString('es-CO'):row[c]}</td>`).join('')}</tr>`
+    ).join('');
+});
+</script>
+{% endblock %}

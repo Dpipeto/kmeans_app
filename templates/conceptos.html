@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}Conceptos K-Means{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="hero-tag">// Fundamentos Teóricos</div>
+  <h1>K-Means<br><span style="color:var(--accent2)">Clustering</span></h1>
+  <p>Algoritmo de aprendizaje no supervisado que agrupa observaciones en K grupos basándose en la minimización de la varianza intra-clúster.</p>
+</div>
+
+<div class="content">
+  <!-- What is K-Means -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>¿Qué es K-Means?</div>
+    <p style="color:var(--muted);font-size:.9rem;line-height:1.8;margin-bottom:1rem">
+      K-Means es un algoritmo de <strong style="color:var(--text)">aprendizaje no supervisado</strong> que particiona un conjunto de datos en <em>K</em> grupos (clústeres) mutuamente excluyentes. Cada clúster queda representado por su <strong style="color:var(--accent)">centroide</strong>, el promedio vectorial de todos sus miembros.
+    </p>
+    <p style="color:var(--muted);font-size:.9rem;line-height:1.8">
+      El algoritmo minimiza la <strong style="color:var(--accent2)">inercia</strong> (suma de distancias cuadráticas de cada punto a su centroide más cercano), buscando clústeres compactos y bien separados.
+    </p>
+  </div>
+
+  <div class="section-head">Funcionamiento Paso a Paso</div>
+  <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:2rem">
+    <div style="display:flex;gap:1.5rem;align-items:flex-start">
+      <div style="width:40px;height:40px;border-radius:50%;background:rgba(110,231,247,.1);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;color:var(--accent);flex-shrink:0">1</div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:.3rem">Inicialización</div>
+        <p style="color:var(--muted);font-size:.87rem;line-height:1.7">Se seleccionan aleatoriamente <em>K</em> puntos del dataset como centroides iniciales. En <code style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--accent3)">sklearn</code> se usa <code style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--accent3)">KMeans++</code> por defecto, que mejora la selección inicial para convergencia más rápida.</p>
+      </div>
+    </div>
+    <div style="display:flex;gap:1.5rem;align-items:flex-start">
+      <div style="width:40px;height:40px;border-radius:50%;background:rgba(167,139,250,.1);border:2px solid var(--accent2);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;color:var(--accent2);flex-shrink:0">2</div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:.3rem">Asignación</div>
+        <p style="color:var(--muted);font-size:.87rem;line-height:1.7">Cada punto se asigna al clúster cuyo centroide esté más cerca, usando <strong style="color:var(--text)">distancia Euclidiana</strong>:</p>
+        <div class="code-block" style="margin-top:.5rem">
+          d(x, c) = √ Σᵢ (xᵢ − cᵢ)²
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:1.5rem;align-items:flex-start">
+      <div style="width:40px;height:40px;border-radius:50%;background:rgba(52,211,153,.1);border:2px solid var(--accent3);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;color:var(--accent3);flex-shrink:0">3</div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:.3rem">Actualización</div>
+        <p style="color:var(--muted);font-size:.87rem;line-height:1.7">Los centroides se recalculan como la <strong style="color:var(--text)">media aritmética</strong> de todos los puntos del clúster:</p>
+        <div class="code-block" style="margin-top:.5rem">
+          cₖ = (1/|Sₖ|) · Σ xᵢ  para todo xᵢ ∈ Sₖ
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:1.5rem;align-items:flex-start">
+      <div style="width:40px;height:40px;border-radius:50%;background:rgba(251,146,60,.1);border:2px solid var(--accent4);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;color:var(--accent4);flex-shrink:0">4</div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:.3rem">Convergencia</div>
+        <p style="color:var(--muted);font-size:.87rem;line-height:1.7">Los pasos 2 y 3 se repiten hasta que los centroides <strong style="color:var(--text)">no cambien significativamente</strong> entre iteraciones o se alcance el número máximo definido. El resultado es un mínimo local de la función de inercia.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--accent3)"></span>Ventajas</div>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:.6rem">
+        <li style="font-size:.87rem;color:var(--muted);padding-left:1rem;border-left:2px solid var(--accent3)">Simple e intuitivo de implementar</li>
+        <li style="font-size:.87rem;color:var(--muted);padding-left:1rem;border-left:2px solid var(--accent3)">Escalable a grandes datasets</li>
+        <li style="font-size:.87rem;color:var(--muted);padding-left:1rem;border-left:2px solid var(--accent3)">Converge rápidamente (O(nkt))</li>
+        <li style="font-size:.87rem;color:var(--muted);padding-left:1rem;border-left:2px solid var(--accent3)">Resultados fáciles de interpretar</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--danger)"></span>Limitaciones</div>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:.6rem">
+        <li style="font-size:.87rem;color:var(--muted);padding-left:1rem;border-left:2px solid var(--danger)">Requiere definir K previamente</li>
+        <li style="font-size:.87rem;color:var(--muted);padding-left:1rem;border-left:2px solid var(--danger)">Sensible a la inicialización</li>
+        <li style="font-size:.87rem;color:var(--muted);padding-left:1rem;border-left:2px solid var(--danger)">Asume clústeres esféricos</li>
+        <li style="font-size:.87rem;color:var(--muted);padding-left:1rem;border-left:2px solid var(--danger)">Afectado por outliers extremos</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-head">Método del Codo</div>
+  <div class="card">
+    <div class="card-title"><span class="dot" style="background:var(--accent4)"></span>¿Cómo elegir K?</div>
+    <p style="color:var(--muted);font-size:.87rem;line-height:1.8;margin-bottom:1rem">
+      El <strong style="color:var(--text)">método del codo (Elbow Method)</strong> consiste en entrenar K-Means con distintos valores de K y graficar la <strong style="color:var(--accent)">inercia</strong> resultante. La inercia siempre disminuye al aumentar K, pero lo hace de forma abrupta hasta cierto punto. El "codo" de la curva indica el <strong style="color:var(--text)">K óptimo</strong>: a partir de ese valor, agregar más clústeres genera una mejora marginal que no justifica la complejidad adicional.
+    </p>
+    <div class="code-block">
+<span class="kw">from</span> sklearn.cluster <span class="kw">import</span> KMeans<br><br>
+inertias = []<br>
+<span class="kw">for</span> k <span class="kw">in</span> range(1, 11):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;km = KMeans(n_clusters=k, random_state=42, n_init=10)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;km.fit(X_scaled)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;inertias.append(km.inertia_)<br><br>
+<span class="cm"># Graficar: el "codo" señala el K óptimo</span>
+    </div>
+  </div>
+</div>
+{% endblock %}

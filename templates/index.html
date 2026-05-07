@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Inicio{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="hero-tag">// Aprendizaje No Supervisado · Segmentación de Clientes</div>
+  <h1>K-Means<br><span style="color:var(--accent2)">Clustering</span><br>en Flask</h1>
+  <p>Aplicación web que implementa y visualiza el algoritmo K-Means sobre un dataset real de clientes, permitiendo explorar agrupaciones automáticas, centroides y patrones ocultos en los datos.</p>
+</div>
+
+<div class="content">
+  <div class="grid-3" style="margin-bottom:2rem">
+    <div class="stat-pill">
+      <span class="stat-label">Registros</span>
+      <span class="stat-value" style="color:var(--accent)">150</span>
+      <span style="font-size:.75rem;color:var(--muted)">clientes reales simulados</span>
+    </div>
+    <div class="stat-pill">
+      <span class="stat-label">Variables</span>
+      <span class="stat-value" style="color:var(--accent2)">6</span>
+      <span style="font-size:.75rem;color:var(--muted)">features numéricas</span>
+    </div>
+    <div class="stat-pill">
+      <span class="stat-label">Algoritmo</span>
+      <span class="stat-value" style="color:var(--accent3);font-size:1.1rem;line-height:1.4">K-Means</span>
+      <span style="font-size:.75rem;color:var(--muted)">sklearn · StandardScaler · PCA</span>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Descripción del Problema</div>
+      <p style="color:var(--muted);font-size:.88rem;line-height:1.8">
+        Una empresa de retail necesita entender mejor a sus clientes para diseñar estrategias de marketing personalizadas. Con 150 registros que incluyen datos demográficos y de comportamiento de compra, el objetivo es <strong style="color:var(--text)">identificar segmentos naturales</strong> de clientes que compartan características similares, sin contar con etiquetas previas.
+      </p>
+      <p style="color:var(--muted);font-size:.88rem;line-height:1.8;margin-top:.8rem">
+        K-Means permite agrupar automáticamente estos perfiles y descubrir patrones que guíen decisiones de negocio: campañas dirigidas, ofertas diferenciadas y atención personalizada.
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--accent2)"></span>Flujo del Proyecto</div>
+      <div style="display:flex;flex-direction:column;gap:.6rem;font-size:.85rem">
+        <div style="display:flex;gap:.8rem;align-items:flex-start">
+          <span style="font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.72rem;margin-top:.15rem">01</span>
+          <div><strong>Dataset</strong> <span style="color:var(--muted)">— 150 clientes, 6 variables numéricas, sin valores nulos</span></div>
+        </div>
+        <div style="display:flex;gap:.8rem;align-items:flex-start">
+          <span style="font-family:'JetBrains Mono',monospace;color:var(--accent2);font-size:.72rem;margin-top:.15rem">02</span>
+          <div><strong>Preparación</strong> <span style="color:var(--muted)">— Normalización con StandardScaler, selección de features</span></div>
+        </div>
+        <div style="display:flex;gap:.8rem;align-items:flex-start">
+          <span style="font-family:'JetBrains Mono',monospace;color:var(--accent3);font-size:.72rem;margin-top:.15rem">03</span>
+          <div><strong>Método del codo</strong> <span style="color:var(--muted)">— Gráfica de inercia para justificar K</span></div>
+        </div>
+        <div style="display:flex;gap:.8rem;align-items:flex-start">
+          <span style="font-family:'JetBrains Mono',monospace;color:var(--accent4);font-size:.72rem;margin-top:.15rem">04</span>
+          <div><strong>K-Means</strong> <span style="color:var(--muted)">— Entrenamiento, etiquetado y visualización 2D (PCA)</span></div>
+        </div>
+        <div style="display:flex;gap:.8rem;align-items:flex-start">
+          <span style="font-family:'JetBrains Mono',monospace;color:var(--accent5);font-size:.72rem;margin-top:.15rem">05</span>
+          <div><strong>Interpretación</strong> <span style="color:var(--muted)">— Análisis de centroides y perfil de cada clúster</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background:linear-gradient(135deg,rgba(110,231,247,.04),rgba(167,139,250,.04));border-color:rgba(110,231,247,.2)">
+    <div class="card-title"><span class="dot" style="background:var(--accent3)"></span>Variables del Dataset</div>
+    <div class="grid-3">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--accent);margin-bottom:.3rem">edad</div>
+        <div style="font-size:.82rem;color:var(--muted)">Años del cliente (18–75). Refleja etapa de vida y poder adquisitivo.</div>
+      </div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--accent2);margin-bottom:.3rem">ingreso_mensual</div>
+        <div style="font-size:.82rem;color:var(--muted)">Ingreso en COP. Determinante de capacidad de compra.</div>
+      </div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--accent3);margin-bottom:.3rem">gasto_mensual</div>
+        <div style="font-size:.82rem;color:var(--muted)">Gasto en COP. Muestra el comportamiento real de consumo.</div>
+      </div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--accent4);margin-bottom:.3rem">frecuencia_compras</div>
+        <div style="font-size:.82rem;color:var(--muted)">Compras por mes. Indica nivel de fidelidad y engagement.</div>
+      </div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--accent5);margin-bottom:.3rem">antiguedad_meses</div>
+        <div style="font-size:.82rem;color:var(--muted)">Meses como cliente. Mide retención y lealtad.</div>
+      </div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#facc15;margin-bottom:.3rem">num_productos</div>
+        <div style="font-size:.82rem;color:var(--muted)">Productos adquiridos. Refleja amplitud del ticket de compra.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:1rem;flex-wrap:wrap">
+    <a href="/dataset" style="display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.5rem;background:var(--accent);color:#000;border-radius:8px;text-decoration:none;font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.02em">
+      Ver Dataset →
+    </a>
+    <a href="/modelo" style="display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.5rem;background:transparent;color:var(--accent2);border:1px solid var(--accent2);border-radius:8px;text-decoration:none;font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.02em">
+      Ejecutar Modelo →
+    </a>
+  </div>
+</div>
+{% endblock %}
